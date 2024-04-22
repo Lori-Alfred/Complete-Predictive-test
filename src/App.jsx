@@ -72,6 +72,7 @@ function App() {
             // when upload response is successful for run post API method for asset process
             if (uploadResponse.ok) {
               const reqBody = `key=${key}&pipeline=dragonfly-img-basic`;
+
               const processingResponse = await postData(
                 apiEndpoints.assetsProcess,
                 reqBody,
@@ -122,8 +123,8 @@ function App() {
       ) : (
         <>
           {stagingResultsArray &&
-            stagingResultsArray.length > 0 &&
-            stagingResultsArray.map((stagingResult) => {
+            stagingResultsArray?.length > 0 &&
+            stagingResultsArray?.map((stagingResult) => {
               <div className="success-message">{stagingResult}</div>;
             })}
           {Isloading && <div>{`loading....`}</div>}
