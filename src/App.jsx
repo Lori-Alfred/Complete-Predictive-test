@@ -18,18 +18,17 @@ function App() {
   };
   useEffect(() => {
     setTimeout(() => {
-      setShowWelcomePage();
+      setShowWelcomePage(false);
     }, 2000);
   }, []);
-
   useEffect(() => {
-    if (stagingResultsArray && stagingResultsArray.length > 0) {
+    if (generatedResultsArray && generatedResultsArray.length > 0) {
       stagingFilesOnS3();
     }
     //eslint-disable-next-line
-  }, [stagingResultsArray]);
+  }, [generatedResultsArray]);
 
-  // Generate presignedurl for each selected files
+  // Generate presignedurl for each selected files concurrently
   const generateUrl = async () => {
     try {
       setIsLoading(true);
@@ -40,7 +39,9 @@ function App() {
           return { selectedFile, url, key };
         } catch (error) {
           setError("Error generating URL");
-          console.error(error);
+          setTimeout(() => {
+            setError(null);
+          }, 5000);
         }
       });
       // Return all presigned url,key for each selected file
@@ -50,22 +51,25 @@ function App() {
     } catch (error) {
       setError("Error generating URL");
       setIsLoading(false);
-      console.error(error);
     }
   };
 
-  //put API to stage file via aws s3
+  // stage file via aws s3 via Put Method
   const stagingFilesOnS3 = async () => {
     try {
       setIsLoading(true);
+
+      // map generated urls to stage to s3 bucket
       const stagingFiles = generatedResultsArray?.map(
         async ({ key, selectedFile, url }) => {
           try {
-            const binaryData = await convertToBase64(...selectedFile);
+            const binaryData = await convertToBase64(selectedFile);
+
             const uploadResponse = await putDataPresignedUrl(url, binaryData, {
               Accept: "*/*",
               "Content-Type": "image/jpeg",
             });
+            // when upload response is successful for run post API method for asset process
             if (uploadResponse.ok) {
               const reqBody = `key=${key}&pipeline=dragonfly-img-basic`;
               const processingResponse = await postData(
@@ -73,6 +77,8 @@ function App() {
                 reqBody,
                 { "Content-Type": "application/x-www-form-urlencoded" }
               );
+              // when processing response is successful for run post API method for asset status
+
               if (processingResponse) {
                 const statusReqBody = {
                   taskId: processingResponse?.taskId,
@@ -90,28 +96,36 @@ function App() {
             }
           } catch (error) {
             setError("Error staging files on amazon S3");
+            setTimeout(() => {
+              setError(null);
+            }, 5000);
           }
         }
       );
-
       const stagingFilesResults = await Promise.all(stagingFiles);
       setStagingResultsArray(stagingFilesResults);
       setIsLoading(false);
     } catch (error) {
       setError("Error staging files on amazon S3");
       setIsLoading(false);
-      console.error(error);
+      setTimeout(() => {
+        setError(null);
+      }, 5000);
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
     <>
       {showWelcomePage ? (
         <WelcomePage />
       ) : (
         <>
+          {stagingResultsArray &&
+            stagingResultsArray.length > 0 &&
+            stagingResultsArray.map((stagingResult) => {
+              <div className="success-message">{stagingResult}</div>;
+            })}
           {Isloading && <div>{`loading....`}</div>}
           {error && <div className="error-message">{error}</div>}{" "}
           <div className="dropzone-container">

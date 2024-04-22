@@ -27,10 +27,12 @@ const Dropzone = ({ handleSelectedFile }) => {
       <section className="container">
         <div {...getRootProps({ className: "dropzone" })}>
           <input {...getInputProps()} />
-          <p>Drag n drop some files here, or click to select files</p>
+          <p className="click-select-file">
+            Drag n drop some files here, or click to select files
+          </p>
         </div>
         <aside>
-          <h4>Files</h4>
+          <h4> Selected Files :</h4>
           <ul>{files}</ul>
         </aside>
       </section>

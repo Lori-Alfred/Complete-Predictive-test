@@ -6,11 +6,23 @@
 .error-message {
   background-color: rgb(235, 132, 132);
   color: red;
+  padding: 0.5rem;
+}
+.success-message {
+  background-color: rgb(175, 203, 186);
+  color: rgb(121, 250, 121);
+  padding: 0.5rem;
 }
 .dropzone-container {
   background-color: #030f32;
   color: #fff;
   padding: 10rem;
+}
+.dropzone-container button:disabled {
+  cursor: not-allowed;
+}
+.click-select-file {
+  cursor: pointer;
 }
 
 @media (prefers-reduced-motion: no-preference) {
