@@ -38,7 +38,11 @@ function App() {
           const { url, key } = Response;
           return { selectedFile, url, key };
         } catch (error) {
-          setError("Error generating URL");
+          const errorMessage = error?.response?.message
+            ? error?.response?.message
+            : "Error generating URL";
+          setError(errorMessage);
+          setGeneratedResultsArray(null);
           setTimeout(() => {
             setError(null);
           }, 5000);
@@ -49,7 +53,10 @@ function App() {
       setGeneratedResultsArray(generatedResults);
       setIsLoading(false);
     } catch (error) {
-      setError("Error generating URL");
+      const errorMessage = error?.response?.message
+        ? error?.response?.message
+        : "Error generating URL";
+      setError(errorMessage);
       setIsLoading(false);
     }
   };
@@ -70,11 +77,11 @@ function App() {
               "Content-Type": "image/jpeg",
             });
             // when upload response is successful for run post API method for asset process
-            if (uploadResponse.ok) {
+            if (uploadResponse?.ok) {
               const reqBody = `key=${key}&pipeline=dragonfly-img-basic`;
 
               const processingResponse = await postData(
-                apiEndpoints.assetsProcess,
+                apiEndpoints?.assetsProcess,
                 reqBody,
                 { "Content-Type": "application/x-www-form-urlencoded" }
               );
@@ -96,7 +103,10 @@ function App() {
               }
             }
           } catch (error) {
-            setError("Error staging files on amazon S3");
+            const errorMessage = error?.response?.message
+              ? error?.response?.message
+              : "Error staging files on amazon S3";
+            setError(errorMessage);
             setTimeout(() => {
               setError(null);
             }, 5000);
@@ -107,7 +117,10 @@ function App() {
       setStagingResultsArray(stagingFilesResults);
       setIsLoading(false);
     } catch (error) {
-      setError("Error staging files on amazon S3");
+      const errorMessage = error?.response?.message
+        ? error?.response?.message
+        : "Error staging files on amazon S3";
+      setError(errorMessage);
       setIsLoading(false);
       setTimeout(() => {
         setError(null);
@@ -122,16 +135,22 @@ function App() {
         <WelcomePage />
       ) : (
         <>
+          {/* This is tentative  because could not proceed to the end of the API process */}
           {stagingResultsArray &&
             stagingResultsArray?.length > 0 &&
             stagingResultsArray?.map((stagingResult) => {
               <div className="success-message">{stagingResult}</div>;
             })}
-          {Isloading && <div>{`loading....`}</div>}
+          {Isloading && (
+            <div>
+              {" "}
+              <p>loading....</p>
+            </div>
+          )}
           {error && <div className="error-message">{error}</div>}{" "}
           <div className="dropzone-container">
             <button onClick={generateUrl} disabled={Isloading}>
-              Send selected files
+              {Isloading ? "Loading..." : "Send selected files"}
             </button>
             <div>
               <Dropzone handleSelectedFile={handleSelectedFile} />
